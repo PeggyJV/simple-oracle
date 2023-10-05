@@ -1,7 +1,7 @@
 version: v1
 plugins:
   - name: prost
-    out: src/gen/osmosis_cosmwasm
+    out: cosmwasm-proto/src/gen
     opt:
       - compile_well_known_types
       - extern_path=.google.protobuf=::prost_types
@@ -10,7 +10,7 @@ plugins:
       - retain_enum_prefix=true
     strategy: all
   - name: tonic
-    out: src/gen/osmosis_cosmwasm
+    out: cosmwasm-proto/src/gen
     opt:
       - compile_well_known_types
       - extern_path=.google.protobuf=::prost_types
@@ -18,7 +18,7 @@ plugins:
       - client_mod_attribute=.=#[allow(clippy::all\, unused_qualifications\, unused_variables\, dead_code\, missing_docs)]
     strategy: all
   - name: prost-crate
-    out: src/gen/osmosis_cosmwasm
+    out: cosmwasm-proto/src/gen
     strategy: all
     opt:
       - no_features

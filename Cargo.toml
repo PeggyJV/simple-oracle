@@ -1,0 +1,10 @@
+[workspace]
+members = ["cosmwasm-proto"]
+
+[package]
+name = "simple-oracle"
+version = "0.0.0"
+edition = "2021"
+
+[workspace.dependencies]
+cosmos-sdk-proto = { version = "0.20", features = ["cosmwasm"] } 
