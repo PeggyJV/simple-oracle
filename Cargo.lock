@@ -2957,6 +2957,7 @@ dependencies = [
  "ethers",
  "eyre",
  "serde",
+ "tonic",
 ]
 
 [[package]]
