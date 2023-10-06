@@ -1,0 +1,13 @@
+[package]
+name = "simple-oracle"
+version = "0.0.0"
+edition = "2021"
+authors = ["Zaki Manian", "Collin Brittain"]
+
+[dependencies]
+eyre.workspace = true
+
+cosmos-sdk-proto = { version = "0.20.0", features = ["cosmwasm"] }
+ethers = "2.0.10"
+serde = { version = "1.0.188", features = ["derive"] }
+
