@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use eyre::Result;
+use ethers::abi::Address;
 use serde::{Deserialize, Serialize};
 
 mod querier;
@@ -14,14 +15,18 @@ pub struct Config {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct Quote {
-    // Collin: should maybe put the associated eth contract address in 
-    // a wrapper struct?
-    pub ethereum_contract: String,
+pub(crate) struct QuotePrice {
+    pub asset: Asset,
     pub value: u64,
     pub base: String,
     pub quote: String,
     pub timestamp: u64,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct Asset {
+    pub ethereum_contract: Address,
+    pub decimals: u32,
 }
 
 /// Should crate a channel, passing the sender to a thread running a [Querier], and the receiver
