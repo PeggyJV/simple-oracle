@@ -1,5 +1,4 @@
 use clap::Parser;
-use confy;
 use simple_oracle::Config;
 
 #[derive(Parser, Debug)]

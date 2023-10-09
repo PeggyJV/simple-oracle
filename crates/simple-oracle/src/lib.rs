@@ -47,13 +47,6 @@ pub async fn start(config: &Config) -> Result<()> {
     Ok(())
 }
 
-pub fn tx_thread(config: &Config, _rx: mpsc::Receiver<QuotePrice>) -> Result<()> {
-    let _config = config.clone();
-
-    /// start thread
-    Ok(())
-}
-
 pub fn unix_now() -> u64 {
     time::SystemTime::now()
         .duration_since(time::UNIX_EPOCH)

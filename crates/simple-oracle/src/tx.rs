@@ -2,7 +2,7 @@
 use std::{
     collections::HashMap,
     str::FromStr,
-    sync::{mpsc, Mutex},
+    sync::mpsc,
 };
 
 use cosmos_sdk_proto::{cosmwasm::wasm::v1::MsgExecuteContract, traits::Message};
@@ -16,6 +16,7 @@ use ocular::{
     tx::{FeeInfo, UnsignedTx},
     MsgClient, QueryClient,
 };
+use tokio::sync::Mutex;
 
 use crate::{u256_to_decimal, Config, QuotePrice};
 
@@ -62,7 +63,7 @@ impl Oracle {
         };
 
         let msg = MsgExecuteContract {
-            sender: self.signer.lock().unwrap().address("osmo")?,
+            sender: self.signer.lock().await.address("osmo")?,
             contract: contract.to_owned(),
             msg: serde_json::to_vec(&inner_msg)?,
             // ????
@@ -94,7 +95,7 @@ impl Oracle {
         let mut unsigned = UnsignedTx::new();
         unsigned.add_msg(msg);
 
-        let signer = &self.signer.lock().expect("failed to get lock on signer");
+        let signer = &self.signer.lock().await;
 
         let signed = unsigned
             .sign(signer, fee_info, &chain_context, &mut qclient)
