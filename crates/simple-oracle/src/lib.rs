@@ -1,10 +1,10 @@
-use std::{collections::HashMap, future::Future, str::FromStr, sync::{mpsc, Arc}, time};
+use std::{collections::HashMap, str::FromStr, sync::{mpsc}, time};
 
 use cosmwasm_std::Decimal256;
 use ethers::types::{Address, U256};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
-use tokio::task::JoinHandle;
+
 
 mod querier;
 mod tx;
@@ -50,8 +50,8 @@ pub async fn start(config: &Config) -> Result<()> {
     Ok(())
 }
 
-pub fn tx_thread(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<()> {
-    let config = config.clone();
+pub fn tx_thread(config: &Config, _rx: mpsc::Receiver<QuotePrice>) -> Result<()> {
+    let _config = config.clone();
 
     /// start thread
     Ok(())

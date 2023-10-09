@@ -1,5 +1,5 @@
 /// Logic for signing and sending Execute transactions to CosmWasm contract
-use std::{borrow::BorrowMut, collections::HashMap, str::FromStr, sync::{mpsc, Mutex}};
+use std::{collections::HashMap, str::FromStr, sync::{mpsc, Mutex}};
 
 use cosmos_sdk_proto::{cosmwasm::wasm::v1::MsgExecuteContract, traits::Message};
 use cosmwasm_std::Timestamp;
@@ -13,7 +13,7 @@ use ocular::{
     MsgClient, QueryClient,
 };
 
-use crate::{format_ethereum_address, u256_to_decimal, Config, QuotePrice};
+use crate::{u256_to_decimal, Config, QuotePrice};
 
 pub struct Oracle {
     rx: mpsc::Receiver<QuotePrice>,
@@ -37,7 +37,7 @@ impl Oracle {
 
     pub async fn run(&mut self) {
         while let Ok(quote) = self.rx.recv() {
-            if let Err(err) = self.submit_quote(quote).await {
+            if let Err(_err) = self.submit_quote(quote).await {
                 // log errors
                 continue;
             }
