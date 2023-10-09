@@ -1,6 +1,7 @@
-use std::{collections::HashMap, sync::mpsc, time};
+use std::{collections::HashMap, str::FromStr, sync::mpsc, time};
 
-use ethers::{abi::Address, types::U256};
+use cosmwasm_std::Decimal256;
+use ethers::types::{Address, U256};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +12,7 @@ mod tx;
 pub struct Config {
     pub ethereum_rpc_url: String,
     pub osmosis_grpc_url: String,
-    pub contract_map: HashMap<String, String>,
+    pub contract_map: HashMap<Address, String>,
     pub signing_key_path: String,
     pub assets: Vec<Asset>,
 }
@@ -34,26 +35,15 @@ pub struct QuotePrice {
 /// Should crate a channel, passing the sender to a thread running a [Querier], and the receiver
 /// to a thread running the tx submission logic. Tx thread will also need to construct the signing
 /// key from the key path in [Config]
-pub fn start(config: &Config) -> Result<()> {
-    let (tx, rx) = mpsc::channel();
+pub async fn start(config: &Config) -> Result<()> {
+    let (tx, rx) = mpsc::sync_channel(config.assets.len());
 
-    start_querier_thread(config, tx);
-    start_tx_thread(config, rx);
+    let querier = querier::Querier::new(config.to_owned(), tx)?;
+    tokio::spawn(async move { querier.run().await });
 
-    Ok(())
-}
+    let mut oracle = tx::Oracle::new(config, rx)?;
+    oracle.run().await;
 
-pub fn start_querier_thread(config: &Config, tx: mpsc::Sender<QuotePrice>) -> Result<()> {
-    let config = config.clone();
-
-    /// start thread
-    Ok(())
-}
-
-pub fn start_tx_thread(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<()> {
-    let config = config.clone();
-
-    /// start thread
     Ok(())
 }
 
@@ -62,4 +52,23 @@ pub fn unix_now() -> u64 {
         .duration_since(time::UNIX_EPOCH)
         .unwrap()
         .as_secs()
+}
+
+pub fn format_ethereum_address(address: Address) -> String {
+    format!(
+        "0x{}",
+        address
+            .as_bytes()
+            .iter()
+            .map(|b| format!("{:0>2x?}", b))
+            .fold(String::new(), |acc, x| acc + &x)
+    )
+}
+
+pub fn u256_to_decimal(value: U256) -> Result<Decimal256> {
+    let mut value = value.to_string();
+
+    value.push_str(".0");
+
+    Ok(Decimal256::from_str(&value)?)
 }

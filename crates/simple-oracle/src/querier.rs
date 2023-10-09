@@ -13,17 +13,13 @@ use crate::{unix_now, Asset, Config, QuotePrice};
 
 #[derive(Clone, Debug)]
 pub struct Querier {
-    sender: mpsc::Sender<QuotePrice>,
+    sender: mpsc::SyncSender<QuotePrice>,
     client: Arc<Provider<Http>>,
     assets: HashSet<Asset>,
 }
 
 impl Querier {
-    pub(crate) fn new(
-        config: &Config,
-        sender: mpsc::Sender<QuotePrice>,
-        client: Provider<Http>,
-    ) -> Result<Self> {
+    pub(crate) fn new(config: Config, sender: mpsc::SyncSender<QuotePrice>) -> Result<Self> {
         let provider = Provider::<Http>::try_from(config.ethereum_rpc_url.as_str())?;
         let mut assets = HashSet::new();
 
