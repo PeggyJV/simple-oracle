@@ -1,6 +1,7 @@
-use std::{collections::HashMap, sync::mpsc, time};
+use std::{collections::HashMap, str::FromStr, sync::mpsc, time};
 
-use ethers::{abi::Address, types::U256};
+use cosmwasm_std::Decimal256;
+use ethers::types::{Address, U256};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +12,7 @@ mod tx;
 pub struct Config {
     pub ethereum_rpc_url: String,
     pub osmosis_grpc_url: String,
-    pub contract_map: HashMap<String, String>,
+    pub contract_map: HashMap<Address, String>,
     pub signing_key_path: String,
     pub assets: Vec<Asset>,
 }
@@ -62,4 +63,23 @@ pub fn unix_now() -> u64 {
         .duration_since(time::UNIX_EPOCH)
         .unwrap()
         .as_secs()
+}
+
+pub fn format_ethereum_address(address: Address) -> String {
+    format!(
+        "0x{}",
+        address
+            .as_bytes()
+            .iter()
+            .map(|b| format!("{:0>2x?}", b))
+            .fold(String::new(), |acc, x| acc + &x)
+    )
+}
+
+pub fn u256_to_decimal(value: U256) -> Result<Decimal256> {
+    let mut value = value.to_string();
+
+    value.push_str(".0");
+
+    Ok(Decimal256::from_str(&value)?)
 }
