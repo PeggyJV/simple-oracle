@@ -38,7 +38,7 @@ pub async fn start(config: &Config) -> Result<()> {
 
     let (tx, rx) = mpsc::sync_channel(config.assets.len());
 
-    let querier = querier::Querier::new(config.to_owned(), tx)?;
+    let mut querier = querier::Querier::new(config.to_owned(), tx)?;
     tokio::spawn(async move { querier.run().await });
 
     let mut oracle = tx::Oracle::new(config, rx)?;
