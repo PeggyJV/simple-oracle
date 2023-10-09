@@ -1,9 +1,5 @@
 /// Logic for signing and sending Execute transactions to CosmWasm contract
-use std::{
-    collections::HashMap,
-    str::FromStr,
-    sync::mpsc,
-};
+use std::{collections::HashMap, str::FromStr, sync::mpsc};
 
 use cosmos_sdk_proto::{cosmwasm::wasm::v1::MsgExecuteContract, traits::Message};
 use cosmwasm_std::Timestamp;
@@ -17,6 +13,7 @@ use ocular::{
     MsgClient, QueryClient,
 };
 use tokio::sync::Mutex;
+use tracing::error;
 
 use crate::{u256_to_decimal, Config, QuotePrice};
 
@@ -42,13 +39,13 @@ impl Oracle {
 
     pub async fn run(&mut self) {
         while let Ok(quote) = self.rx.recv() {
-            if let Err(_err) = self.submit_quote(quote).await {
-                // log errors
+            if let Err(err) = self.submit_quote(quote).await {
+                error!("failed to submit quote: {err}");
                 continue;
             }
         }
 
-        // log error unexpected channel close
+        error!("channel closed unexpectely");
     }
 
     pub async fn submit_quote(&mut self, quote: QuotePrice) -> Result<()> {
@@ -70,7 +67,7 @@ impl Oracle {
             funds: vec![],
         };
 
-        Ok(self.sign_and_send(msg).await?)
+        self.sign_and_send(msg).await
     }
 
     pub async fn sign_and_send(&mut self, msg: MsgExecuteContract) -> Result<()> {

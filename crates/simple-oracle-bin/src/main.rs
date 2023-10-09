@@ -1,5 +1,6 @@
 use clap::Parser;
 use simple_oracle::Config;
+use tracing::error;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -10,8 +11,16 @@ struct Args {
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt::init();
+
     let args = Args::parse();
+    if args.config.is_empty() {
+        panic!("config file path is required");
+    }
+
     let config: Config = confy::load(&args.config, None).expect("failed to load config");
 
-    simple_oracle::start(&config).await.expect("fatal error");
+    if let Err(err) = simple_oracle::start(&config).await {
+        error!("fatal error: {err}");
+    }
 }

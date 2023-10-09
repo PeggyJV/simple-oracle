@@ -4,6 +4,7 @@ use cosmwasm_std::Decimal256;
 use ethers::types::{Address, U256};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 mod querier;
 mod tx;
@@ -32,10 +33,9 @@ pub struct QuotePrice {
     pub timestamp: u64,
 }
 
-/// Should crate a channel, passing the sender to a thread running a [Querier], and the receiver
-/// to a thread running the tx submission logic. Tx thread will also need to construct the signing
-/// key from the key path in [Config]
 pub async fn start(config: &Config) -> Result<()> {
+    info!("starting application");
+
     let (tx, rx) = mpsc::sync_channel(config.assets.len());
 
     let querier = querier::Querier::new(config.to_owned(), tx)?;
@@ -43,6 +43,8 @@ pub async fn start(config: &Config) -> Result<()> {
 
     let mut oracle = tx::Oracle::new(config, rx)?;
     oracle.run().await;
+
+    info!("application stopping");
 
     Ok(())
 }

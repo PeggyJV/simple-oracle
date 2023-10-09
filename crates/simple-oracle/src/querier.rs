@@ -8,6 +8,7 @@ use ethers::{
     types::U256,
 };
 use eyre::Result;
+use tracing::{error, info, trace};
 
 use crate::{unix_now, Asset, Config, QuotePrice};
 
@@ -36,17 +37,30 @@ impl Querier {
 
     pub async fn run(&self) -> Result<()> {
         loop {
+            info!("getting latest redemption rate quotes");
+
             for asset in self.assets.iter() {
+                trace!("getting redemption rate for {}/{}", asset.quote, asset.base);
+                trace!(
+                    "calling previewRedeem on contract {}",
+                    asset.ethereum_contract
+                );
                 let Ok(redemption_rate) = self.get_redemption_rate(asset).await else {
-                    //error!("failed to get redemption rate for {:?}: {}", asset, e);
+                    error!("failed to get redemption rate for {}/{}", asset.quote, asset.base);
                     continue;
                 };
 
-                self.send(QuotePrice {
+                let quote = QuotePrice {
                     asset: asset.clone(),
                     value: redemption_rate,
                     timestamp: unix_now(),
-                })?;
+                };
+
+                trace!("sending quote to oracle thread: {:?}", quote);
+
+                if let Err(err) = self.send(quote) {
+                    error!("failed to send quote to oracle thread: {}", err);
+                }
             }
 
             tokio::time::sleep(std::time::Duration::from_secs(5)).await;
@@ -56,7 +70,7 @@ impl Querier {
     /// Calls previewRedeem(uint265) on the Cellar contract and returns a [QuotePrice]
     pub(crate) async fn get_redemption_rate(&self, asset: &Asset) -> Result<U256> {
         let contract = erc4626::ERC4626::new(asset.ethereum_contract, self.client.clone());
-        let unit = U256::from(1 * 10u64.pow(asset.decimals));
+        let unit = U256::from(10u64.pow(asset.decimals));
 
         Ok(contract.preview_redeem(unit).call().await?)
     }

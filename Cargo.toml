@@ -13,3 +13,5 @@ confy = "0.5.1"
 eyre = "0.6"
 ethers = "2.0.10"
 tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
