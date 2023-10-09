@@ -1,9 +1,10 @@
-use std::{collections::HashMap, str::FromStr, sync::mpsc, time};
+use std::{collections::HashMap, future::Future, str::FromStr, sync::{mpsc, Arc}, time};
 
 use cosmwasm_std::Decimal256;
 use ethers::types::{Address, U256};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
+use tokio::task::JoinHandle;
 
 mod querier;
 mod tx;
@@ -35,23 +36,21 @@ pub struct QuotePrice {
 /// Should crate a channel, passing the sender to a thread running a [Querier], and the receiver
 /// to a thread running the tx submission logic. Tx thread will also need to construct the signing
 /// key from the key path in [Config]
-pub fn start(config: &Config) -> Result<()> {
-    let (tx, rx) = mpsc::channel();
+pub async fn start(config: &Config) -> Result<()> {
+    let (tx, rx) = mpsc::sync_channel(config.assets.len());
 
-    start_querier_thread(config, tx);
-    start_tx_thread(config, rx);
+    let querier = querier::Querier::new(config.to_owned(), tx)?;
+    tokio::spawn(async move {
+        querier.run().await
+    });
+
+    let mut oracle = tx::Oracle::new(config, rx)?;
+    oracle.run().await;
 
     Ok(())
 }
 
-pub fn start_querier_thread(config: &Config, tx: mpsc::Sender<QuotePrice>) -> Result<()> {
-    let config = config.clone();
-
-    /// start thread
-    Ok(())
-}
-
-pub fn start_tx_thread(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<()> {
+pub fn tx_thread(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<()> {
     let config = config.clone();
 
     /// start thread

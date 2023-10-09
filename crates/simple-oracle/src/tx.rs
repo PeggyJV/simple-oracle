@@ -1,5 +1,5 @@
 /// Logic for signing and sending Execute transactions to CosmWasm contract
-use std::{borrow::BorrowMut, collections::HashMap, str::FromStr, sync::mpsc};
+use std::{borrow::BorrowMut, collections::HashMap, str::FromStr, sync::{mpsc, Mutex}};
 
 use cosmos_sdk_proto::{cosmwasm::wasm::v1::MsgExecuteContract, traits::Message};
 use cosmwasm_std::Timestamp;
@@ -18,13 +18,15 @@ use crate::{format_ethereum_address, u256_to_decimal, Config, QuotePrice};
 pub struct Oracle {
     rx: mpsc::Receiver<QuotePrice>,
     contract_map: HashMap<Address, String>,
-    signer: AccountInfo,
+    signer: Mutex<AccountInfo>,
     grpc_url: String,
 }
 
 impl Oracle {
-    pub async fn new(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<Self> {
+    pub fn new(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<Self> {
         let signer = AccountInfo::from_pem(&config.signing_key_path)?;
+        let signer = Mutex::new(signer);
+
         Ok(Self {
             rx,
             contract_map: config.contract_map.clone(),
@@ -33,19 +35,15 @@ impl Oracle {
         })
     }
 
-    pub async fn run(&mut self) -> Result<()> {
-        loop {
-            match self.rx.recv() {
-                Ok(quote) => {
-                    if let Err(err) = self.submit_quote(quote).await {
-                        //log::error!("Error sending quote: {}", err);
-                    }
-                }
-                Err(err) => {
-                    //log::error!("Error receiving quote: {}", err);
-                }
+    pub async fn run(&mut self) {
+        while let Ok(quote) = self.rx.recv() {
+            if let Err(err) = self.submit_quote(quote).await {
+                // log errors
+                continue;
             }
         }
+
+        // log error unexpected channel close
     }
 
     pub async fn submit_quote(&mut self, quote: QuotePrice) -> Result<()> {
@@ -60,7 +58,7 @@ impl Oracle {
         };
 
         let msg = MsgExecuteContract {
-            sender: self.signer.address("osmo")?,
+            sender: self.signer.lock().unwrap().address("osmo")?,
             contract: contract.to_owned(),
             msg: serde_json::to_vec(&inner_msg)?,
             // ????
@@ -92,8 +90,10 @@ impl Oracle {
         let mut unsigned = UnsignedTx::new();
         unsigned.add_msg(msg);
 
+        let signer = &self.signer.lock().expect("failed to get lock on signer");
+
         let signed = unsigned
-            .sign(&self.signer, fee_info, &chain_context, &mut qclient)
+            .sign(signer, fee_info, &chain_context, &mut qclient)
             .await?;
 
         let mut mclient = MsgClient::new(&self.grpc_url)?;
