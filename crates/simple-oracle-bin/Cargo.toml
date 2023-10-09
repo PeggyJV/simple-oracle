@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-simple-oracle.workspace = true
-clap = { version = "4.4.6", features = ["derive"] }
 confy.workspace = true 
+simple-oracle.workspace = true
+tokio.workspace = true
+
+clap = { version = "4.4.6", features = ["derive"] }

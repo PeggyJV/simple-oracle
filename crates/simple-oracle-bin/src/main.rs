@@ -9,9 +9,10 @@ struct Args {
     config: String,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
     let config: Config = confy::load(&args.config, None).expect("failed to load config");
 
-    simple_oracle::start(&config).expect("fatal error");
+    simple_oracle::start(&config).await.expect("fatal error");
 }

@@ -3861,6 +3861,7 @@ dependencies = [
  "clap",
  "confy",
  "simple-oracle",
+ "tokio",
 ]
 
 [[package]]
