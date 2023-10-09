@@ -8,8 +8,10 @@ authors = ["Zaki Manian", "Collin Brittain"]
 eyre.workspace = true
 erc4626.workspace = true
 ethers.workspace = true 
+tokio.workspace = true
 
 cosmos-sdk-proto = { version = "0.20.0", features = ["cosmwasm"] }
 serde = { version = "1.0.188", features = ["derive"] }
 tonic = "0.10.2"
+ocular = "1.0.0-beta-0.0.1"
 

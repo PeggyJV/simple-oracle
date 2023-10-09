@@ -12,3 +12,4 @@ simple-oracle-bin = { path = "crates/simple-oracle-bin" }
 confy = "0.5.1"
 eyre = "0.6"
 ethers = "2.0.10"
+tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }

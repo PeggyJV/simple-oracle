@@ -1,13 +1,7 @@
-use std::{
-    collections::HashMap,
-    sync::mpsc,
-};
+use std::{collections::HashMap, sync::mpsc, time};
 
+use ethers::{abi::Address, types::U256};
 use eyre::Result;
-use ethers::{
-    abi::Address,
-    providers::{Http, Provider},
-};
 use serde::{Deserialize, Serialize};
 
 mod querier;
@@ -22,18 +16,18 @@ pub struct Config {
     pub assets: Vec<Asset>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Asset {
     pub ethereum_contract: Address,
     pub decimals: u32,
+    pub base: String,
+    pub quote: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct QuotePrice {
     pub asset: Asset,
-    pub value: u64,
-    pub base: String,
-    pub quote: String,
+    pub value: U256,
     pub timestamp: u64,
 }
 
@@ -43,7 +37,7 @@ pub struct QuotePrice {
 pub fn start(config: &Config) -> Result<()> {
     let (tx, rx) = mpsc::channel();
 
-    start_querier_thread(config, tx); 
+    start_querier_thread(config, tx);
     start_tx_thread(config, rx);
 
     Ok(())
@@ -51,17 +45,21 @@ pub fn start(config: &Config) -> Result<()> {
 
 pub fn start_querier_thread(config: &Config, tx: mpsc::Sender<QuotePrice>) -> Result<()> {
     let config = config.clone();
-    
-    /// start thread
 
+    /// start thread
     Ok(())
 }
 
 pub fn start_tx_thread(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<()> {
     let config = config.clone();
- 
-    /// start thread
 
+    /// start thread
     Ok(())
 }
 
+pub fn unix_now() -> u64 {
+    time::SystemTime::now()
+        .duration_since(time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+}
