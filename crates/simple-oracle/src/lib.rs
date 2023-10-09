@@ -1,10 +1,9 @@
-use std::{collections::HashMap, str::FromStr, sync::{mpsc}, time};
+use std::{collections::HashMap, str::FromStr, sync::mpsc, time};
 
 use cosmwasm_std::Decimal256;
 use ethers::types::{Address, U256};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
-
 
 mod querier;
 mod tx;
@@ -40,9 +39,7 @@ pub async fn start(config: &Config) -> Result<()> {
     let (tx, rx) = mpsc::sync_channel(config.assets.len());
 
     let querier = querier::Querier::new(config.to_owned(), tx)?;
-    tokio::spawn(async move {
-        querier.run().await
-    });
+    tokio::spawn(async move { querier.run().await });
 
     let mut oracle = tx::Oracle::new(config, rx)?;
     oracle.run().await;

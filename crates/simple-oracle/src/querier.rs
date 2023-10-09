@@ -19,10 +19,7 @@ pub struct Querier {
 }
 
 impl Querier {
-    pub(crate) fn new(
-        config: Config,
-        sender: mpsc::SyncSender<QuotePrice>,
-    ) -> Result<Self> {
+    pub(crate) fn new(config: Config, sender: mpsc::SyncSender<QuotePrice>) -> Result<Self> {
         let provider = Provider::<Http>::try_from(config.ethereum_rpc_url.as_str())?;
         let mut assets = HashSet::new();
 
