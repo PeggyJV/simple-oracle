@@ -23,7 +23,7 @@ pub struct Querier {
     sender: mpsc::SyncSender<QuotePrice>,
     client: Arc<Provider<Http>>,
     assets: HashSet<Asset>,
-    previous_quotes: HashMap<Address, QuotePrice>,
+    last_submitted: HashMap<Address, QuotePrice>,
 }
 
 impl Querier {
@@ -39,7 +39,7 @@ impl Querier {
             sender,
             client: Arc::new(provider),
             assets,
-            previous_quotes: HashMap::new(),
+            last_submitted: HashMap::new(),
         })
     }
 
@@ -77,10 +77,10 @@ impl Querier {
                 continue;
             };
 
-            let Some(prev) = self.previous_quotes.get(&asset.ethereum_contract) else {
-                self.previous_quotes.insert(asset.ethereum_contract, quote.clone());
+            let Some(prev) = self.last_submitted.get(&asset.ethereum_contract) else {
+                self.send(quote.clone())?;
 
-                self.send(quote)?;
+                self.last_submitted.insert(asset.ethereum_contract, quote);
 
                 continue;
             };
@@ -113,9 +113,11 @@ impl Querier {
 
             trace!("sending quote to oracle thread: {:?}", quote);
 
-            if let Err(err) = self.send(quote) {
+            if let Err(err) = self.send(quote.clone()) {
                 error!("failed to send quote to oracle thread: {}", err);
             }
+
+            self.last_submitted.insert(asset.ethereum_contract, quote);
         }
 
         Ok(())
