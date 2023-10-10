@@ -18,6 +18,8 @@ use crate::{utils::*, Asset, Config, QuotePrice};
 const DEFAULT_SUBMISSION_PERIOD: u64 = 300;
 const MIN_TIME_BETWEEN_QUOTES: u64 = 3;
 
+/// Handles querying for the current redemption rate of an asset and submitting it to the oracle
+/// under certain conditions.
 #[derive(Clone, Debug)]
 pub struct Querier {
     sender: mpsc::SyncSender<QuotePrice>,
@@ -68,6 +70,7 @@ impl Querier {
         }
     }
 
+    /// Queries and evaluates quotes for submission to the oracle thread
     pub async fn handle_quote(&mut self, check_variance: bool) -> Result<()> {
         info!("getting latest redemption rate quotes");
 
@@ -123,6 +126,7 @@ impl Querier {
         Ok(())
     }
 
+    /// Wraps the raw previewRedeem output in a [QuotePrice]
     pub async fn get_quote(&self, asset: &Asset) -> Result<QuotePrice> {
         trace!("getting redemption rate for {}/{}", asset.quote, asset.base);
         trace!(

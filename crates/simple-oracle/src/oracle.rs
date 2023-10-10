@@ -17,6 +17,7 @@ use tracing::error;
 
 use crate::{utils::*, Config, QuotePrice};
 
+/// Handles signing and sending Execute::SetPrice transactions to CosmWasm contract
 pub struct Oracle {
     rx: mpsc::Receiver<QuotePrice>,
     contract_map: HashMap<Address, String>,

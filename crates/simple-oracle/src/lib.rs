@@ -33,6 +33,7 @@ pub struct QuotePrice {
     pub timestamp: u64,
 }
 
+/// Entrypoint should call this to start the application
 pub async fn start(config: &Config) -> Result<()> {
     info!("starting application");
 
