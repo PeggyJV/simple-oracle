@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::mpsc};
 
-use ethers::types::{Address, U256};
+use cosmwasm_std::Decimal256;
+use ethers::types::Address;
 use eyre::Result;
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -29,7 +30,7 @@ pub struct Asset {
 #[derive(Clone, Debug)]
 pub struct QuotePrice {
     pub asset: Asset,
-    pub value: U256,
+    pub value: Decimal256,
     pub timestamp: u64,
 }
 

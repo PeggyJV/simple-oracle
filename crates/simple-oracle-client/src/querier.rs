@@ -1,9 +1,11 @@
 use std::{
     collections::{HashMap, HashSet},
+    str::FromStr,
     sync::{mpsc, Arc},
     time::Duration,
 };
 
+use cosmwasm_std::Decimal256;
 use ethers::{
     providers::{Http, Provider},
     types::{Address, U256},
@@ -91,22 +93,9 @@ impl Querier {
             // if this is a variance check quote, we only submit if the change in value is
             // greater than 0.25%.
             if check_variance {
-                let diff: U256;
-                if quote.value > prev.value {
-                    diff = quote.value - prev.value;
-                } else {
-                    diff = prev.value - quote.value;
-                }
-
-                // TODO: this is not a good check, u64 is too small. need to figure out how to do
-                // do the math with the U256 type
-                let change = diff.as_u64() as f64 / quote.value.as_u64() as f64;
-
-                // if the change is less than 0.25% then we continue to wait for the regular
-                // update interval to update this asset.
-                if change < 0.0025 {
+                if !significant_change(quote.value, prev.value) {
                     continue;
-                }
+                }                 
             }
 
             // avoid sending two quotes one after the other due to different intervals
@@ -144,11 +133,12 @@ impl Querier {
     }
 
     /// Calls previewRedeem(uint265) on the Cellar contract and returns the redemption rate
-    pub(crate) async fn get_redemption_rate(&self, asset: &Asset) -> Result<U256> {
+    pub(crate) async fn get_redemption_rate(&self, asset: &Asset) -> Result<Decimal256> {
         let contract = erc4626::ERC4626::new(asset.ethereum_contract, self.client.clone());
         let unit = U256::from(10u64.pow(asset.decimals));
+        let rr = contract.preview_redeem(unit).call().await?;
 
-        Ok(contract.preview_redeem(unit).call().await?)
+        convert_u256(rr, asset.decimals)
     }
 
     /// Pushes the [QuotePrice] to the channel

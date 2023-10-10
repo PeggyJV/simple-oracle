@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 confy.workspace = true 
-simple-oracle.workspace = true
+simple-oracle-client.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

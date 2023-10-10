@@ -1,5 +1,5 @@
 [package]
-name = "simple-oracle"
+name = "simple-oracle-client"
 version = "0.0.0"
 edition = "2021"
 authors = ["Zaki Manian", "Collin Brittain"]

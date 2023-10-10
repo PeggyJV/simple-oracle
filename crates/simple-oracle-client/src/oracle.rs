@@ -56,7 +56,7 @@ impl Oracle {
             .unwrap();
 
         let inner_msg = simple_oracle::msg::ExecuteMsg::SetPrice {
-            value: u256_to_decimal(quote.value)?,
+            value: quote.value,
             timestamp: Some(Timestamp::from_seconds(quote.timestamp)),
         };
 

@@ -2,12 +2,12 @@
 members = [
     "crates/erc4626",
     "crates/simple-oracle-bin",
-    "crates/simple-oracle"
+    "crates/simple-oracle-client"
 ]
 
 [workspace.dependencies]
 erc4626 = { path = "crates/erc4626" }
-simple-oracle = { path = "crates/simple-oracle" }
+simple-oracle-client = { path = "crates/simple-oracle-client" }
 simple-oracle-bin = { path = "crates/simple-oracle-bin" }
 confy = "0.5.1"
 eyre = "0.6"

@@ -3874,14 +3874,14 @@ version = "0.0.0"
 dependencies = [
  "clap",
  "confy",
- "simple-oracle",
+ "simple-oracle-client",
  "tokio",
  "tracing",
  "tracing-subscriber",
 ]
 
 [[package]]
-name = "simple-oracle"
+name = "simple-oracle-client"
 version = "0.0.0"
 dependencies = [
  "cosmos-sdk-proto 0.20.0",
