@@ -1,13 +1,12 @@
-use std::{collections::HashMap, str::FromStr, sync::mpsc, time};
+use std::{collections::HashMap, sync::mpsc};
 
-use cosmwasm_std::Decimal256;
 use ethers::types::{Address, U256};
 use eyre::Result;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 mod querier;
-mod tx;
+mod oracle;
 mod utils;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -42,7 +41,7 @@ pub async fn start(config: &Config) -> Result<()> {
     let mut querier = querier::Querier::new(config.to_owned(), tx)?;
     tokio::spawn(async move { querier.run().await });
 
-    let mut oracle = tx::Oracle::new(config, rx)?;
+    let mut oracle = oracle::Oracle::new(config, rx)?;
     oracle.run().await;
 
     info!("application stopping");
