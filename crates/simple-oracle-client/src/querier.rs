@@ -1,6 +1,5 @@
 use std::{
     collections::{HashMap, HashSet},
-    str::FromStr,
     sync::{mpsc, Arc},
     time::Duration,
 };
@@ -92,10 +91,8 @@ impl Querier {
 
             // if this is a variance check quote, we only submit if the change in value is
             // greater than 0.25%.
-            if check_variance {
-                if !significant_change(quote.value, prev.value) {
-                    continue;
-                }                 
+            if check_variance && !significant_change(quote.value, prev.value) {
+                continue;
             }
 
             // avoid sending two quotes one after the other due to different intervals

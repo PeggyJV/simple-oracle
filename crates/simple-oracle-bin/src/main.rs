@@ -1,5 +1,5 @@
 use clap::Parser;
-use simple_oracle::Config;
+use simple_oracle_client::Config;
 use tracing::error;
 
 #[derive(Parser, Debug)]
@@ -20,7 +20,7 @@ async fn main() {
 
     let config: Config = confy::load(&args.config, None).expect("failed to load config");
 
-    if let Err(err) = simple_oracle::start(&config).await {
+    if let Err(err) = simple_oracle_client::start(&config).await {
         error!("fatal error: {err}");
     }
 }

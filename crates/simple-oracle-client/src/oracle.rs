@@ -15,7 +15,7 @@ use ocular::{
 use tokio::sync::Mutex;
 use tracing::error;
 
-use crate::{utils::*, Config, QuotePrice};
+use crate::{Config, QuotePrice};
 
 /// Handles signing and sending Execute::SetPrice transactions to CosmWasm contract
 pub struct Oracle {

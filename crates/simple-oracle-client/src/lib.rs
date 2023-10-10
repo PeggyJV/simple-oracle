@@ -6,8 +6,8 @@ use eyre::Result;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-mod querier;
 mod oracle;
+mod querier;
 mod utils;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]

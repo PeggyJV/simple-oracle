@@ -1,7 +1,7 @@
-use std::{str::FromStr, time, ops::Div};
+use std::{ops::Div, str::FromStr, time};
 
 use cosmwasm_std::Decimal256;
-use ethers::types::{Address, U256};
+use ethers::types::U256;
 use eyre::Result;
 
 /// Returns the current unix time in milliseconds
@@ -10,18 +10,6 @@ pub fn unix_now() -> u64 {
         .duration_since(time::UNIX_EPOCH)
         .unwrap()
         .as_secs()
-}
-
-/// Converts an H160 to human readable format
-pub fn format_ethereum_address(address: Address) -> String {
-    format!(
-        "0x{}",
-        address
-            .as_bytes()
-            .iter()
-            .map(|b| format!("{:0>2x?}", b))
-            .fold(String::new(), |acc, x| acc + &x)
-    )
 }
 
 /// Converts a U256 to a Decimal256
@@ -60,11 +48,10 @@ mod tests {
     fn test_significant_change() {
         let current = Decimal256::from_str("1.0").unwrap();
         let previous = Decimal256::from_str("1.1").unwrap();
-        
+
         assert!(significant_change(current, previous));
 
         let previous = Decimal256::from_str("1.00024").unwrap();
         assert!(!significant_change(current, previous));
     }
 }
-
