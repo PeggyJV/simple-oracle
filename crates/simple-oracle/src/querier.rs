@@ -12,7 +12,7 @@ use eyre::Result;
 use tokio::time::MissedTickBehavior;
 use tracing::{error, info, trace};
 
-use crate::{unix_now, Asset, Config, QuotePrice};
+use crate::{utils::*, Asset, Config, QuotePrice};
 
 // 5 minutes
 const DEFAULT_SUBMISSION_PERIOD: u64 = 300;

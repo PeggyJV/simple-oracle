@@ -15,7 +15,7 @@ use ocular::{
 use tokio::sync::Mutex;
 use tracing::error;
 
-use crate::{u256_to_decimal, Config, QuotePrice};
+use crate::{utils::*, Config, QuotePrice};
 
 pub struct Oracle {
     rx: mpsc::Receiver<QuotePrice>,
