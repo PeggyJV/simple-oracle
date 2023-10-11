@@ -13,7 +13,7 @@ use ocular::{
     MsgClient, QueryClient,
 };
 use tokio::sync::Mutex;
-use tracing::{error, info};
+use tracing::{debug, error, info};
 
 use crate::{Config, QuotePrice};
 
@@ -23,13 +23,14 @@ pub struct Oracle {
     contract_map: HashMap<Address, String>,
     signer: Mutex<AccountInfo>,
     grpc_url: String,
+    rpc_url: String,
 }
 
 impl Oracle {
     pub fn new(config: &Config, mnemonic: String, rx: mpsc::Receiver<QuotePrice>) -> Result<Self> {
         let signer = AccountInfo::from_mnemonic(&mnemonic, "")?;
         info!("oracle wallet is {}", signer.address("osmo")?);
-        
+
         let signer = Mutex::new(signer);
 
         Ok(Self {
@@ -37,6 +38,7 @@ impl Oracle {
             contract_map: config.contract_map.clone(),
             signer,
             grpc_url: config.osmosis_grpc_url.clone(),
+            rpc_url: config.osmosis_rpc_url.clone(),
         })
     }
 
@@ -70,7 +72,15 @@ impl Oracle {
             funds: vec![],
         };
 
-        self.sign_and_send(msg).await
+        self.sign_and_send(msg).await?;
+
+        info!(
+            "submitted price for {}/{}",
+            quote.asset.quote, quote.asset.base
+        );
+        debug!("submitted quote {quote:?}");
+
+        Ok(())
     }
 
     pub async fn sign_and_send(&mut self, msg: MsgExecuteContract) -> Result<()> {
@@ -101,7 +111,7 @@ impl Oracle {
             .sign(signer, fee_info, &chain_context, &mut qclient)
             .await?;
 
-        let mut mclient = MsgClient::new(&self.grpc_url)?;
+        let mut mclient = MsgClient::new(&self.rpc_url)?;
 
         signed.broadcast_commit(&mut mclient).await?;
 

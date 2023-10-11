@@ -14,6 +14,7 @@ mod utils;
 #[serde(default)]
 pub struct Config {
     pub ethereum_rpc_url: String,
+    pub osmosis_rpc_url: String,
     pub osmosis_grpc_url: String,
     pub price_variance_threshold: f64,
     pub check_variance_period: u64,
@@ -27,7 +28,8 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             ethereum_rpc_url: "http://localhost:8545".to_string(),
-            osmosis_grpc_url: "osmosis-grpc.polkachu.com:12590".to_string(),
+            osmosis_rpc_url: "https://osmosis-rpc.polkachu.com:443".to_string(),
+            osmosis_grpc_url: "grpc://osmosis-grpc.polkachu.com:12590".to_string(),
             price_variance_threshold: 0.0025,
             check_variance_period: 15,
             submission_period: 300,

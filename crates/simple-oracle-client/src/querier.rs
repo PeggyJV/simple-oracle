@@ -121,8 +121,14 @@ impl Querier {
 
             // if this is a variance check quote, we only submit if the change in value is
             // greater than the configured variance threshold.
-            if check_variance && !self.significant_change(quote.value, prev.value) {
+            let significant_change = self.significant_change(quote.value, prev.value);
+            if check_variance && !significant_change {
                 continue;
+            } else {
+                info!(
+                    "significant price change detected for {}/{}",
+                    asset.quote, asset.base
+                );
             }
 
             // avoid sending two quotes one after the other due to different intervals
@@ -130,7 +136,11 @@ impl Querier {
                 continue;
             }
 
-            trace!("sending quote to oracle thread: {:?}", quote);
+            info!(
+                "sending quote for {}/{} to oracle thread",
+                quote.asset.quote, quote.asset.base
+            );
+            trace!("{quote:?}");
 
             if let Err(err) = self.send(quote.clone()) {
                 error!("failed to send quote to oracle thread: {}", err);
@@ -187,7 +197,7 @@ impl Querier {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_significant_change() {
         let (tx, _) = mpsc::sync_channel(1);
@@ -202,4 +212,3 @@ mod tests {
         assert!(!querier.significant_change(current, previous));
     }
 }
-
