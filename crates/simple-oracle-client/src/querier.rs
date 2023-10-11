@@ -183,3 +183,23 @@ impl Querier {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_significant_change() {
+        let (tx, _) = mpsc::sync_channel(1);
+        let config = Config::default();
+        let querier = Querier::new(config, tx).unwrap();
+        let current = Decimal256::from_str("1.0").unwrap();
+        let previous = Decimal256::from_str("1.1").unwrap();
+
+        assert!(querier.significant_change(current, previous));
+
+        let previous = Decimal256::from_str("1.00024").unwrap();
+        assert!(!querier.significant_change(current, previous));
+    }
+}
+

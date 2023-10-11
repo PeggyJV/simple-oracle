@@ -35,15 +35,4 @@ mod tests {
         let result = convert_u256(value, 6).unwrap();
         assert_eq!(Decimal256::from_str("1.0").unwrap(), result);
     }
-
-    #[test]
-    fn test_significant_change() {
-        let current = Decimal256::from_str("1.0").unwrap();
-        let previous = Decimal256::from_str("1.1").unwrap();
-
-        assert!(significant_change(current, previous));
-
-        let previous = Decimal256::from_str("1.00024").unwrap();
-        assert!(!significant_change(current, previous));
-    }
 }
