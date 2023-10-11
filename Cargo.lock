@@ -3870,7 +3870,7 @@ dependencies = [
 
 [[package]]
 name = "simple-oracle-bin"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "clap",
  "confy",
@@ -3882,7 +3882,7 @@ dependencies = [
 
 [[package]]
 name = "simple-oracle-client"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "cosmos-sdk-proto 0.20.0",
  "cosmwasm",

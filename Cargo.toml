@@ -1,14 +1,22 @@
 [workspace]
 members = [
     "crates/erc4626",
-    "crates/simple-oracle-bin",
-    "crates/simple-oracle-client"
+    "crates/simple-oracle-client",
+    "bin/simple-oracle-bin",
 ]
+default-members = [
+    "bin/simple-oracle-bin",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Collin Brittain"]
 
 [workspace.dependencies]
 erc4626 = { path = "crates/erc4626" }
 simple-oracle-client = { path = "crates/simple-oracle-client" }
-simple-oracle-bin = { path = "crates/simple-oracle-bin" }
+simple-oracle-bin = { path = "bin/simple-oracle-bin" }
 confy = "0.5.1"
 eyre = "0.6"
 ethers = "2.0.10"
