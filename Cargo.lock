@@ -3869,7 +3869,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "simple-oracl-bin"
+name = "simple-oracle-bin"
 version = "0.0.0"
 dependencies = [
  "clap",

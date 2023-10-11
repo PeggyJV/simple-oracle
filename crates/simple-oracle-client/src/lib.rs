@@ -10,13 +10,34 @@ mod oracle;
 mod querier;
 mod utils;
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
 pub struct Config {
     pub ethereum_rpc_url: String,
     pub osmosis_grpc_url: String,
-    pub contract_map: HashMap<Address, String>,
     pub signing_key_path: String,
+    pub price_variance_threshold: f64,
+    pub check_variance_period: u64,
+    pub submission_period: u64,
+    pub min_time_between_quotes: u64,
     pub assets: Vec<Asset>,
+    pub contract_map: HashMap<Address, String>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            ethereum_rpc_url: "http://localhost:8545".to_string(),
+            osmosis_grpc_url: "osmosis-grpc.polkachu.com:12590".to_string(),
+            signing_key_path: "".to_string(),
+            price_variance_threshold: 0.0025,
+            check_variance_period: 15,
+            submission_period: 300,
+            min_time_between_quotes: 6,
+            assets: vec![],
+            contract_map: HashMap::new(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]

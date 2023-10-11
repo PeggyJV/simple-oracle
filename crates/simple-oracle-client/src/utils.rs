@@ -1,4 +1,4 @@
-use std::{ops::Div, str::FromStr, time};
+use std::time;
 
 use cosmwasm_std::Decimal256;
 use ethers::types::U256;
@@ -17,14 +17,6 @@ pub fn convert_u256(value: U256, decimals: u32) -> Result<Decimal256> {
     let value = value.as_u128();
 
     Ok(Decimal256::from_atomics(value, decimals)?)
-}
-
-/// Checks if the delta is greater than a 0.25% change
-pub fn significant_change(current: Decimal256, previous: Decimal256) -> bool {
-    let delta = current.abs_diff(previous).div(previous);
-    let threshold = Decimal256::from_str("0.0025").unwrap();
-
-    delta > threshold
 }
 
 #[cfg(test)]

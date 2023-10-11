@@ -1,5 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
+    ops::Div,
+    str::FromStr,
     sync::{mpsc, Arc},
     time::Duration,
 };
@@ -10,14 +12,15 @@ use ethers::{
     types::{Address, U256},
 };
 use eyre::Result;
-use tokio::time::MissedTickBehavior;
+use tokio::time::{Instant, MissedTickBehavior};
 use tracing::{error, info, trace};
 
 use crate::{utils::*, Asset, Config, QuotePrice};
 
-// 5 minutes
+const DEFAULT_PRICE_VARIANCE_THRESHOLD: f64 = 0.0025;
 const DEFAULT_SUBMISSION_PERIOD: u64 = 300;
-const MIN_TIME_BETWEEN_QUOTES: u64 = 3;
+const DEFAULT_VARIANCE_CHECK_PERIOD: u64 = 15;
+const DEFAULT_MIN_TIME_BETWEEN_QUOTES: u64 = 6;
 
 /// Handles querying for the current redemption rate of an asset and submitting it to the oracle
 /// under certain conditions.
@@ -27,6 +30,10 @@ pub struct Querier {
     client: Arc<Provider<Http>>,
     assets: HashSet<Asset>,
     last_submitted: HashMap<Address, QuotePrice>,
+    price_variance_threshold: f64,
+    check_variance_period: u64,
+    submission_period: u64,
+    min_time_between_quotes: u64,
 }
 
 impl Querier {
@@ -43,6 +50,26 @@ impl Querier {
             client: Arc::new(provider),
             assets,
             last_submitted: HashMap::new(),
+            price_variance_threshold: if config.price_variance_threshold == 0f64 {
+                DEFAULT_PRICE_VARIANCE_THRESHOLD
+            } else {
+                config.price_variance_threshold
+            },
+            check_variance_period: if config.check_variance_period == 0 {
+                DEFAULT_VARIANCE_CHECK_PERIOD
+            } else {
+                config.check_variance_period
+            },
+            submission_period: if config.submission_period == 0 {
+                DEFAULT_SUBMISSION_PERIOD
+            } else {
+                config.submission_period
+            },
+            min_time_between_quotes: if config.min_time_between_quotes == 0 {
+                DEFAULT_MIN_TIME_BETWEEN_QUOTES
+            } else {
+                config.min_time_between_quotes
+            },
         })
     }
 
@@ -50,9 +77,12 @@ impl Querier {
     /// thread if either the configured refresh period has elapsed or a redemption rate has
     /// a significant delta compared to the previous value.
     pub async fn run(&mut self) -> Result<()> {
-        let mut variance_check_interval = tokio::time::interval(Duration::from_secs(30));
+        let variance_check_period = Duration::from_secs(self.check_variance_period);
+        let variance_check_start = Instant::now().checked_add(variance_check_period).unwrap();
+        let mut variance_check_interval =
+            tokio::time::interval_at(variance_check_start, variance_check_period);
         let mut periodic_submission_interval =
-            tokio::time::interval(Duration::from_secs(DEFAULT_SUBMISSION_PERIOD));
+            tokio::time::interval(Duration::from_secs(self.submission_period));
 
         variance_check_interval.set_missed_tick_behavior(MissedTickBehavior::Delay);
         periodic_submission_interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
@@ -90,13 +120,13 @@ impl Querier {
             };
 
             // if this is a variance check quote, we only submit if the change in value is
-            // greater than 0.25%.
-            if check_variance && !significant_change(quote.value, prev.value) {
+            // greater than the configured variance threshold.
+            if check_variance && !self.significant_change(quote.value, prev.value) {
                 continue;
             }
 
             // avoid sending two quotes one after the other due to different intervals
-            if quote.timestamp - prev.timestamp < MIN_TIME_BETWEEN_QUOTES {
+            if quote.timestamp - prev.timestamp < self.min_time_between_quotes {
                 continue;
             }
 
@@ -136,6 +166,14 @@ impl Querier {
         let rr = contract.preview_redeem(unit).call().await?;
 
         convert_u256(rr, asset.decimals)
+    }
+
+    /// Checks if the delta is greater than a 0.25% change
+    pub fn significant_change(&self, current: Decimal256, previous: Decimal256) -> bool {
+        let delta = current.abs_diff(previous).div(previous);
+        let threshold = Decimal256::from_str(&self.price_variance_threshold.to_string()).unwrap();
+
+        delta > threshold
     }
 
     /// Pushes the [QuotePrice] to the channel

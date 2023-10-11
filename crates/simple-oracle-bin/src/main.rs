@@ -1,6 +1,6 @@
 use clap::Parser;
 use simple_oracle_client::Config;
-use tracing::error;
+use tracing::{debug, error};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -18,9 +18,28 @@ async fn main() {
         panic!("config file path is required");
     }
 
-    let config: Config = confy::load(&args.config, None).expect("failed to load config");
+    let config: Config = confy::load_path(&args.config).expect("failed to load config");
+    debug!("config: {config:?}");
+
+    check_required_fields(&config);
 
     if let Err(err) = simple_oracle_client::start(&config).await {
         error!("fatal error: {err}");
+    }
+}
+
+fn check_required_fields(config: &Config) {
+    if config.signing_key_path.is_empty() {
+        panic!("signing_key_path is required");
+    }
+
+    if config.assets.is_empty() {
+        panic!("assets is required");
+    }
+
+    for a in &config.assets {
+        if config.contract_map.get(&a.ethereum_contract).is_none() {
+            panic!("contract_map is missing entry for {}", a.ethereum_contract);
+        }
     }
 }
