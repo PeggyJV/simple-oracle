@@ -21,18 +21,16 @@ async fn main() {
     let config: Config = confy::load_path(&args.config).expect("failed to load config");
     debug!("config: {config:?}");
 
+    let mnemonic = std::env::var("COSMOS_WALLET").expect("COSMOS_WALLET mnemonic is required");
+
     check_required_fields(&config);
 
-    if let Err(err) = simple_oracle_client::start(&config).await {
+    if let Err(err) = simple_oracle_client::start(&config, mnemonic).await {
         error!("fatal error: {err}");
     }
 }
 
 fn check_required_fields(config: &Config) {
-    if config.signing_key_path.is_empty() {
-        panic!("signing_key_path is required");
-    }
-
     if config.assets.is_empty() {
         panic!("assets is required");
     }

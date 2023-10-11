@@ -13,7 +13,7 @@ use ocular::{
     MsgClient, QueryClient,
 };
 use tokio::sync::Mutex;
-use tracing::error;
+use tracing::{error, info};
 
 use crate::{Config, QuotePrice};
 
@@ -26,8 +26,10 @@ pub struct Oracle {
 }
 
 impl Oracle {
-    pub fn new(config: &Config, rx: mpsc::Receiver<QuotePrice>) -> Result<Self> {
-        let signer = AccountInfo::from_pem(&config.signing_key_path)?;
+    pub fn new(config: &Config, mnemonic: String, rx: mpsc::Receiver<QuotePrice>) -> Result<Self> {
+        let signer = AccountInfo::from_mnemonic(&mnemonic, "")?;
+        info!("oracle wallet is {}", signer.address("osmo")?);
+        
         let signer = Mutex::new(signer);
 
         Ok(Self {

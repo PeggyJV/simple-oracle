@@ -15,7 +15,6 @@ mod utils;
 pub struct Config {
     pub ethereum_rpc_url: String,
     pub osmosis_grpc_url: String,
-    pub signing_key_path: String,
     pub price_variance_threshold: f64,
     pub check_variance_period: u64,
     pub submission_period: u64,
@@ -29,7 +28,6 @@ impl Default for Config {
         Self {
             ethereum_rpc_url: "http://localhost:8545".to_string(),
             osmosis_grpc_url: "osmosis-grpc.polkachu.com:12590".to_string(),
-            signing_key_path: "".to_string(),
             price_variance_threshold: 0.0025,
             check_variance_period: 15,
             submission_period: 300,
@@ -56,7 +54,7 @@ pub struct QuotePrice {
 }
 
 /// Entrypoint should call this to start the application
-pub async fn start(config: &Config) -> Result<()> {
+pub async fn start(config: &Config, mnemonic: String) -> Result<()> {
     info!("starting application");
 
     let (tx, rx) = mpsc::sync_channel(config.assets.len());
@@ -64,7 +62,7 @@ pub async fn start(config: &Config) -> Result<()> {
     let mut querier = querier::Querier::new(config.to_owned(), tx)?;
     tokio::spawn(async move { querier.run().await });
 
-    let mut oracle = oracle::Oracle::new(config, rx)?;
+    let mut oracle = oracle::Oracle::new(config, mnemonic, rx)?;
     oracle.run().await;
 
     info!("application stopping");
