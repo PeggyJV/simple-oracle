@@ -23,7 +23,7 @@ submission_period = 300
 # buffer to prevent the two periods from submitting a price at the same time
 min_time_between_quotes = 6
 osmosis_rpc_url = "https://..."
-osomosis_grpc_url = "grpc://..."
+osmosis_grpc_url = "grpc://..."
 ethereum_rpc_url = "https://..."
 
 # add additional [[assets]] tables for each new asset
