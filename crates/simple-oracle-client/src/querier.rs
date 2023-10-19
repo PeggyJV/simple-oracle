@@ -123,17 +123,12 @@ impl Querier {
             // greater than the configured variance threshold.
             let significant_change = self.significant_change(quote.value, prev.value);
 
-            if significant_change{
-                info!("significant price change detected for {}/{} as previous {} and current {}", asset.quote, asset.base,prev.value, quote.value);
-            }
-
-
             if check_variance && !significant_change {
                 continue;
             } else {
                 info!(
-                    "significant price change detected for {}/{}",
-                    asset.quote, asset.base
+                    "significant price change detected for {}/{} as previous {} and current {}",
+                    asset.quote, asset.base, prev.value, quote.value
                 );
             }
 
