@@ -122,6 +122,8 @@ impl Querier {
             // if this is a variance check quote, we only submit if the change in value is
             // greater than the configured variance threshold.
             let significant_change = self.significant_change(quote.value, prev.value);
+            
+            info!("significant_change: {}", significant_change);
 
             if check_variance && !significant_change {
                 continue;
