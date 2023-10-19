@@ -183,8 +183,9 @@ impl Querier {
     pub fn significant_change(&self, current: Decimal256, previous: Decimal256) -> bool {
         let delta = current.abs_diff(previous).div(previous);
         let threshold = Decimal256::from_str(&self.price_variance_threshold.to_string()).unwrap();
-        
+
         info!("Price delta: {}", delta);
+        info!("Threshold: {}", threshold);
 
         delta > threshold
     }
