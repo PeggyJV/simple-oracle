@@ -107,13 +107,20 @@ impl Oracle {
 
         let signer = &self.signer.lock().await;
 
+        let address = signer.address(&chain_context.prefix)?;
+
+
+        let mut account = qclient.account(&address).await?;
+        info!("account sequence: {:?}", account.sequence);
+
         let signed = unsigned
-            .sign(signer, fee_info, &chain_context, &mut qclient)
-            .await?;
+            .sign_with_sequence(signer, fee_info, &chain_context, account.account_number, account.sequence)?;
 
         let mut mclient = MsgClient::new(&self.rpc_url)?;
 
-        signed.broadcast_commit(&mut mclient).await?;
+        let resp = signed.broadcast_sync(&mut mclient).await?;
+
+        info!("broadcasted tx {}", resp.hash);
 
         Ok(())
     }
